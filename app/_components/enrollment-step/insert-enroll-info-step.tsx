@@ -38,6 +38,7 @@ const InsertEnrollInfoStep = ({ step, onNextStepClick, onBackStepClick }: Insert
   const participantFieldArray = useFieldArray({ control, name: 'group.participants' });
   const { replace: participantFieldArrayReplace } = participantFieldArray;
 
+  const phoneRegister = register('applicant.phone');
   const formValues = useWatch({ control }) as EnrollInfoFormValues;
   const motivation = formValues.applicant?.motivation;
   const isGroup = formValues.type === EnrollmentApplicationType.GROUP;
@@ -66,6 +67,13 @@ const InsertEnrollInfoStep = ({ step, onNextStepClick, onBackStepClick }: Insert
       );
     }
     setValue('group.headCount', size);
+  };
+
+  const formatPhone = (value: string) => {
+    const digits = value.replace(/\D/g, '').slice(0, 11);
+    if (digits.length <= 3) return digits;
+    if (digits.length <= 7) return `${digits.slice(0, 3)}-${digits.slice(3)}`;
+    return `${digits.slice(0, 3)}-${digits.slice(3, 7)}-${digits.slice(7)}`;
   };
 
   const onSubmit = () => {
@@ -132,7 +140,11 @@ const InsertEnrollInfoStep = ({ step, onNextStepClick, onBackStepClick }: Insert
                 <Label htmlFor="phone">전화번호 * (예: 010-1234-5678)</Label>
                 <Input
                   id="phone"
-                  {...register('applicant.phone')}
+                  {...phoneRegister}
+                  onChange={e => {
+                    e.target.value = formatPhone(e.target.value);
+                    phoneRegister.onChange(e);
+                  }}
                   placeholder="010-1234-5678"
                   className={errors.applicant?.phone ? 'border-red-500' : ''}
                 />
