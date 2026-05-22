@@ -22,7 +22,7 @@ const InsertEnrollInfoStep = ({ step, onNextStepClick, onBackStepClick }: Insert
     handleSubmit,
     setValue,
     clearErrors,
-    formState: { errors },
+    formState: { errors, isDirty },
   } = useForm<EnrollInfoFormValues>({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     resolver: zodResolver(enrollInfoSchema as any),
@@ -93,6 +93,17 @@ const InsertEnrollInfoStep = ({ step, onNextStepClick, onBackStepClick }: Insert
       ]);
     }
   }, [storeForm.type, setValue, participantFieldArrayReplace]);
+
+  useEffect(() => {
+    if (!isDirty || currentStep !== step) return;
+
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [isDirty, currentStep, step]);
 
   useEffect(() => {
     clearErrors();
