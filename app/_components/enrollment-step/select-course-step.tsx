@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
-import { AlertCircle, ChevronRight, Loader2 } from 'lucide-react';
+import { AlertCircle, AlertTriangle, ChevronRight, Loader2 } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Course, CourseListResponse } from '@/mock/courses';
 import { courseKeys } from '@/queries/courses';
@@ -17,6 +17,19 @@ import {
   EnrollmentStep,
   type EnrollmentFormStoreState,
 } from '@/store/enrollment-form-store';
+
+const ALMOST_FULL_THRESHOLD = 0.8;
+const ALMOST_FULL_REMAINING = 5;
+
+const getRemainingSeats = (course: Course) => course.maxCapacity - course.currentEnrollment;
+const isFull = (course: Course) => getRemainingSeats(course) <= 0;
+const isAlmostFull = (course: Course) => {
+  const remaining = getRemainingSeats(course);
+  return (
+    !isFull(course) &&
+    (remaining <= ALMOST_FULL_REMAINING || course.currentEnrollment / course.maxCapacity >= ALMOST_FULL_THRESHOLD)
+  );
+};
 
 const enrollmentApplications = [
   { value: EnrollmentApplicationType.PERSONAL, label: '개인 신청' },
@@ -44,6 +57,13 @@ const SelectCourseStep = ({ step, onNextStepClick, initialData }: SelectCourseSt
   const handleNextStepClick = () => {
     if (!form.selectedCourse) {
       setError('강의를 선택해주세요');
+      return;
+    }
+
+    const latestCourse = courses.find(c => c.id === form.selectedCourse?.id);
+    if (latestCourse && isFull(latestCourse)) {
+      setError('선택한 강의의 정원이 마감되었습니다. 다른 강의를 선택해주세요.');
+      setForm({ selectedCourse: undefined });
       return;
     }
 
@@ -91,20 +111,59 @@ const SelectCourseStep = ({ step, onNextStepClick, initialData }: SelectCourseSt
                         .map(course => (
                           <button
                             key={course.id}
-                            onClick={() => handleCourseSelect(course)}
-                            className={`cursor-pointer p-4 rounded-lg border-2 transition-all text-left ${
-                              form.selectedCourse?.id === course.id
-                                ? 'border-blue-600 bg-blue-50'
-                                : 'border-gray-200 hover:border-blue-400'
+                            onClick={() => !isFull(course) && handleCourseSelect(course)}
+                            disabled={isFull(course)}
+                            className={`w-full p-4 rounded-lg border-2 transition-all text-left ${
+                              isFull(course)
+                                ? 'opacity-50 cursor-not-allowed border-gray-200 bg-gray-50'
+                                : form.selectedCourse?.id === course.id
+                                  ? 'cursor-pointer border-blue-600 bg-blue-50'
+                                  : 'cursor-pointer border-gray-200 hover:border-blue-400'
                             }`}>
-                            <div className="flex items-start justify-between">
-                              <div>
-                                <p className="font-semibold text-gray-900">{course.title}</p>
+                            <div className="flex items-start justify-between gap-2">
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <p className="font-semibold text-gray-900">{course.title}</p>
+                                  {isFull(course) && (
+                                    <span className="text-xs px-1.5 py-0.5 rounded bg-red-100 text-red-700 font-medium shrink-0">
+                                      마감
+                                    </span>
+                                  )}
+                                  {isAlmostFull(course) && (
+                                    <span className="text-xs px-1.5 py-0.5 rounded bg-orange-100 text-orange-700 font-medium shrink-0">
+                                      마감 임박
+                                    </span>
+                                  )}
+                                </div>
                                 <p className="text-sm text-gray-600 mt-1">
                                   {new Date(course.startDate).toLocaleDateString()}
                                 </p>
+                                <div className="mt-2">
+                                  <div className="flex justify-between text-xs text-gray-500 mb-0.5">
+                                    <span>
+                                      {isFull(course) ? '정원 마감' : `잔여 ${getRemainingSeats(course)}석`}
+                                    </span>
+                                    <span>
+                                      {course.currentEnrollment}/{course.maxCapacity}명
+                                    </span>
+                                  </div>
+                                  <div className="h-1 rounded-full bg-gray-200 overflow-hidden">
+                                    <div
+                                      className={`h-full rounded-full transition-all ${
+                                        isFull(course)
+                                          ? 'bg-red-500'
+                                          : isAlmostFull(course)
+                                            ? 'bg-orange-400'
+                                            : 'bg-blue-400'
+                                      }`}
+                                      style={{
+                                        width: `${Math.min(100, (course.currentEnrollment / course.maxCapacity) * 100)}%`,
+                                      }}
+                                    />
+                                  </div>
+                                </div>
                               </div>
-                              <p className="font-bold text-blue-600">₩{course.price.toLocaleString()}</p>
+                              <p className="font-bold text-blue-600 shrink-0">₩{course.price.toLocaleString()}</p>
                             </div>
                           </button>
                         ))}
@@ -114,6 +173,16 @@ const SelectCourseStep = ({ step, onNextStepClick, initialData }: SelectCourseSt
               </div>
             )}
           </div>
+
+          {form.selectedCourse && isAlmostFull(form.selectedCourse) && (
+            <Alert className="border-orange-200 bg-orange-50">
+              <AlertTriangle className="h-4 w-4 text-orange-600" />
+              <AlertDescription className="text-orange-700">
+                선택한 강의는 잔여{' '}
+                <strong>{getRemainingSeats(form.selectedCourse)}석</strong>으로 마감이 임박했습니다. 빠르게 신청하세요!
+              </AlertDescription>
+            </Alert>
+          )}
 
           {form.selectedCourse && (
             <div className="pt-4 border-t">

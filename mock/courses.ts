@@ -26,7 +26,7 @@ export const COURSES: Course[] = [
     category: 'development',
     price: 99000,
     maxCapacity: 30,
-    currentEnrollment: 18,
+    currentEnrollment: 28,
     startDate: '2026-06-15T09:00:00.000Z',
     endDate: '2026-07-15T18:00:00.000Z',
     instructor: '김개발',
