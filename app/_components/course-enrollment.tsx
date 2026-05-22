@@ -3,6 +3,7 @@
 import SelectCourseStep from './enrollment-step/select-course-step';
 import InsertEnrollInfoStep from './enrollment-step/insert-enroll-info-step';
 import ConfirmEnrollmentStep from './enrollment-step/confirm-enrollment-step';
+import CompleteEnrollmentStep from './enrollment-step/complete-enrollment-step';
 import ProgressBar from './enrollment-progress-bar/progress-bar';
 import { enrollmentFormStore, EnrollmentStep } from '@/store/enrollment-form-store';
 import { CourseListResponse } from '@/mock/courses';
@@ -12,7 +13,7 @@ interface CourseEnrollmentProps {
 }
 
 const CourseEnrollment = ({ initialData }: CourseEnrollmentProps) => {
-  const { currentStep, setStep } = enrollmentFormStore();
+  const { currentStep, setStep, resetStep, resetForm } = enrollmentFormStore();
   const enrollmentOrders = [EnrollmentStep.COURSE, EnrollmentStep.INFO, EnrollmentStep.CONFIRM];
 
   const handleNextStepClick = () => {
@@ -47,7 +48,7 @@ const CourseEnrollment = ({ initialData }: CourseEnrollmentProps) => {
           <p className="text-gray-600">단 3단계로 원하는 강의를 신청하세요</p>
         </div>
 
-        <ProgressBar values={enrollmentOrders} />
+        {currentStep !== EnrollmentStep.COMPLETE && <ProgressBar values={enrollmentOrders} />}
         <SelectCourseStep
           step={EnrollmentStep.COURSE}
           onNextStepClick={handleNextStepClick}
@@ -62,6 +63,13 @@ const CourseEnrollment = ({ initialData }: CourseEnrollmentProps) => {
           step={EnrollmentStep.CONFIRM}
           onNextStepClick={() => setStep(EnrollmentStep.COMPLETE)}
           onBackStepClick={handleBackStepClick}
+        />
+        <CompleteEnrollmentStep
+          step={EnrollmentStep.COMPLETE}
+          onResetClick={() => {
+            resetStep();
+            resetForm();
+          }}
         />
       </div>
     </div>
