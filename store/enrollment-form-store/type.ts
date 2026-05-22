@@ -5,18 +5,19 @@ export type EnrollmentFormStoreState = {
   currentStep: EnrollmentStep;
   form: {
     selectedCourse: Course | null;
-    applicationType: EnrollmentApplicationType;
-    name: string;
-    email: string;
-    phone: string;
-    motivation: string;
-    groupName: string;
-    groupSize: number;
-    participants: {
+    type: EnrollmentApplicationType;
+    applicant: {
       name: string;
       email: string;
-    }[];
-    managerPhone: string;
+      phone: string;
+      motivation: string;
+    };
+    group: {
+      organizationName: string;
+      headCount: number;
+      participants: { name: string; email: string }[];
+      contactPerson: string;
+    };
     agreedToTerms: boolean;
   };
 };

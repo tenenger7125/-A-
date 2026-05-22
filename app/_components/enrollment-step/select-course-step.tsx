@@ -19,7 +19,7 @@ import {
 } from '@/store/enrollment-form-store';
 
 const enrollmentApplications = [
-  { value: EnrollmentApplicationType.INDIVIDUAL, label: '개인 신청' },
+  { value: EnrollmentApplicationType.PERSONAL, label: '개인 신청' },
   { value: EnrollmentApplicationType.GROUP, label: '단체 신청' },
 ];
 
@@ -36,8 +36,8 @@ const SelectCourseStep = ({ step, onNextStepClick, initialData }: SelectCourseSt
     setError(null);
   };
 
-  const handleApplicationTypeChange = (type: EnrollmentFormStoreState['form']['applicationType']) => {
-    setForm({ applicationType: type });
+  const handleApplicationTypeChange = (type: EnrollmentFormStoreState['form']['type']) => {
+    setForm({ type });
     setError(null);
   };
 
@@ -107,7 +107,7 @@ const SelectCourseStep = ({ step, onNextStepClick, initialData }: SelectCourseSt
           {form.selectedCourse && (
             <div className="pt-4 border-t">
               <p className="text-sm text-gray-600 mb-3">신청 유형 선택</p>
-              <RadioGroup value={form.applicationType} onValueChange={handleApplicationTypeChange}>
+              <RadioGroup value={form.type} onValueChange={handleApplicationTypeChange}>
                 <div className="flex items-center gap-4">
                   {enrollmentApplications.map(({ value, label }) => (
                     <div className="flex items-center space-x-2" key={value}>

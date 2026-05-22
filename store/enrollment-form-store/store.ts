@@ -6,15 +6,17 @@ import { EnrollmentFormStoreAction, EnrollmentFormStoreState } from './type';
 const defaultStep: EnrollmentFormStoreState['currentStep'] = EnrollmentStep.COURSE;
 const defaultForm: EnrollmentFormStoreState['form'] = {
   selectedCourse: null,
-  applicationType: EnrollmentApplicationType.INDIVIDUAL,
-  name: '',
-  email: '',
-  phone: '',
-  motivation: '',
-  groupName: '',
-  groupSize: 2,
-  participants: [{ name: '', email: '' }],
-  managerPhone: '',
+  type: EnrollmentApplicationType.PERSONAL,
+  applicant: { name: '', email: '', phone: '', motivation: '' },
+  group: {
+    organizationName: '',
+    headCount: 2,
+    participants: [
+      { name: '', email: '' },
+      { name: '', email: '' },
+    ],
+    contactPerson: '',
+  },
   agreedToTerms: false,
 };
 

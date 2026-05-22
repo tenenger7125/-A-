@@ -6,6 +6,6 @@ export enum EnrollmentStep {
 }
 
 export enum EnrollmentApplicationType {
-  INDIVIDUAL = 'individual',
+  PERSONAL = 'personal',
   GROUP = 'group',
 }

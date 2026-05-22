@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useFieldArray, useForm, useWatch } from 'react-hook-form';
+import { useFieldArray, useForm, useWatch, type Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 
 import { Button } from '@/components/ui/button';
@@ -25,42 +25,46 @@ const InsertEnrollInfoStep = ({ step, onNextStepClick, onBackStepClick }: Insert
     formState: { errors },
   } = useForm<EnrollInfoFormValues>({
     resolver: zodResolver(enrollInfoSchema),
-    defaultValues: storeForm,
+    defaultValues: {
+      type: storeForm.type,
+      applicant: storeForm.applicant,
+      group: storeForm.group,
+    },
     mode: 'onBlur',
     reValidateMode: 'onBlur',
   });
 
-  const patientFieldArray = useFieldArray({ control, name: 'participants' });
-  const { replace: patientFieldArrayReplace } = patientFieldArray;
+  const participantFieldArray = useFieldArray({ control, name: 'group.participants' });
+  const { replace: participantFieldArrayReplace } = participantFieldArray;
 
   const formValues = useWatch({ control }) as EnrollInfoFormValues;
-  const motivation = formValues.motivation;
-  const isGroup = formValues.applicationType === EnrollmentApplicationType.GROUP;
+  const motivation = formValues.applicant?.motivation;
+  const isGroup = formValues.type === EnrollmentApplicationType.GROUP;
 
   const addParticipant = () => {
-    if (patientFieldArray.fields.length >= 10) return;
-    patientFieldArray.append({ name: '', email: '' });
-    setValue('groupSize', patientFieldArray.fields.length + 1);
+    if (participantFieldArray.fields.length >= 10) return;
+    participantFieldArray.append({ name: '', email: '' });
+    setValue('group.headCount', participantFieldArray.fields.length + 1);
   };
 
   const removeParticipant = (index: number) => {
-    if (patientFieldArray.fields.length <= 2) return;
-    patientFieldArray.remove(index);
-    setValue('groupSize', patientFieldArray.fields.length - 1);
+    if (participantFieldArray.fields.length <= 2) return;
+    participantFieldArray.remove(index);
+    setValue('group.headCount', participantFieldArray.fields.length - 1);
   };
 
   const handleGroupSizeChange = (raw: number) => {
     const size = Math.min(10, Math.max(2, raw || 2));
-    if (size > patientFieldArray.fields.length) {
-      patientFieldArray.append(
-        Array.from({ length: size - patientFieldArray.fields.length }, () => ({ name: '', email: '' })),
+    if (size > participantFieldArray.fields.length) {
+      participantFieldArray.append(
+        Array.from({ length: size - participantFieldArray.fields.length }, () => ({ name: '', email: '' })),
       );
-    } else if (size < patientFieldArray.fields.length) {
-      patientFieldArray.replace(
-        patientFieldArray.fields.slice(0, size).map(f => ({ name: f.name ?? '', email: f.email ?? '' })),
+    } else if (size < participantFieldArray.fields.length) {
+      participantFieldArray.replace(
+        participantFieldArray.fields.slice(0, size).map(f => ({ name: f.name ?? '', email: f.email ?? '' })),
       );
     }
-    setValue('groupSize', size);
+    setValue('group.headCount', size);
   };
 
   const onSubmit = () => {
@@ -68,18 +72,18 @@ const InsertEnrollInfoStep = ({ step, onNextStepClick, onBackStepClick }: Insert
   };
 
   useEffect(() => {
-    setValue('applicationType', storeForm.applicationType);
+    setValue('type', storeForm.type);
 
-    if (storeForm.applicationType === EnrollmentApplicationType.INDIVIDUAL) {
-      setValue('groupName', '');
-      setValue('groupSize', 2);
-      setValue('managerPhone', '');
-      patientFieldArrayReplace([
+    if (storeForm.type === EnrollmentApplicationType.PERSONAL) {
+      setValue('group.organizationName', '');
+      setValue('group.headCount', 2);
+      setValue('group.contactPerson', '');
+      participantFieldArrayReplace([
         { name: '', email: '' },
         { name: '', email: '' },
       ]);
     }
-  }, [storeForm.applicationType, setValue, patientFieldArrayReplace]);
+  }, [storeForm.type, setValue, participantFieldArrayReplace]);
 
   useEffect(() => {
     clearErrors();
@@ -102,11 +106,11 @@ const InsertEnrollInfoStep = ({ step, onNextStepClick, onBackStepClick }: Insert
                 <Label htmlFor="name">이름 *</Label>
                 <Input
                   id="name"
-                  {...register('name')}
+                  {...register('applicant.name')}
                   placeholder="홍길동"
-                  className={errors.name ? 'border-red-500' : ''}
+                  className={errors.applicant?.name ? 'border-red-500' : ''}
                 />
-                {errors.name && <p className="text-sm text-red-600 mt-1">{errors.name.message}</p>}
+                {errors.applicant?.name && <p className="text-sm text-red-600 mt-1">{errors.applicant.name.message}</p>}
               </div>
 
               <div>
@@ -114,29 +118,33 @@ const InsertEnrollInfoStep = ({ step, onNextStepClick, onBackStepClick }: Insert
                 <Input
                   id="email"
                   type="email"
-                  {...register('email')}
+                  {...register('applicant.email')}
                   placeholder="user@example.com"
-                  className={errors.email ? 'border-red-500' : ''}
+                  className={errors.applicant?.email ? 'border-red-500' : ''}
                 />
-                {errors.email && <p className="text-sm text-red-600 mt-1">{errors.email.message}</p>}
+                {errors.applicant?.email && (
+                  <p className="text-sm text-red-600 mt-1">{errors.applicant.email.message}</p>
+                )}
               </div>
 
               <div>
                 <Label htmlFor="phone">전화번호 * (예: 010-1234-5678)</Label>
                 <Input
                   id="phone"
-                  {...register('phone')}
+                  {...register('applicant.phone')}
                   placeholder="010-1234-5678"
-                  className={errors.phone ? 'border-red-500' : ''}
+                  className={errors.applicant?.phone ? 'border-red-500' : ''}
                 />
-                {errors.phone && <p className="text-sm text-red-600 mt-1">{errors.phone.message}</p>}
+                {errors.applicant?.phone && (
+                  <p className="text-sm text-red-600 mt-1">{errors.applicant.phone.message}</p>
+                )}
               </div>
 
               <div>
                 <Label htmlFor="motivation">수강 동기 (선택)</Label>
                 <Textarea
                   id="motivation"
-                  {...register('motivation')}
+                  {...register('applicant.motivation')}
                   placeholder="이 강의를 수강하고 싶은 이유를 적어주세요"
                   maxLength={300}
                   rows={4}
@@ -148,55 +156,59 @@ const InsertEnrollInfoStep = ({ step, onNextStepClick, onBackStepClick }: Insert
             {isGroup && (
               <div className="border-t pt-6 space-y-4">
                 <div>
-                  <Label htmlFor="groupName">단체명 *</Label>
+                  <Label htmlFor="organizationName">단체명 *</Label>
                   <Input
-                    id="groupName"
-                    {...register('groupName')}
+                    id="organizationName"
+                    {...register('group.organizationName')}
                     placeholder="회사명 / 팀명"
-                    className={errors.groupName ? 'border-red-500' : ''}
+                    className={errors.group?.organizationName ? 'border-red-500' : ''}
                   />
-                  {errors.groupName && <p className="text-sm text-red-600 mt-1">{errors.groupName.message}</p>}
+                  {errors.group?.organizationName && (
+                    <p className="text-sm text-red-600 mt-1">{errors.group.organizationName.message}</p>
+                  )}
                 </div>
 
                 <div>
-                  <Label htmlFor="groupSize">신청 인원수 * (2~10명)</Label>
+                  <Label htmlFor="headCount">신청 인원수 * (2~10명)</Label>
                   <Input
-                    id="groupSize"
+                    id="headCount"
                     type="number"
                     min="2"
                     max="10"
-                    value={patientFieldArray.fields.length}
+                    value={participantFieldArray.fields.length}
                     onChange={e => handleGroupSizeChange(parseInt(e.target.value))}
-                    className={errors.groupSize ? 'border-red-500' : ''}
+                    className={errors.group?.headCount ? 'border-red-500' : ''}
                   />
-                  {errors.groupSize && <p className="text-sm text-red-600 mt-1">{errors.groupSize.message}</p>}
+                  {errors.group?.headCount && (
+                    <p className="text-sm text-red-600 mt-1">{errors.group.headCount.message}</p>
+                  )}
                 </div>
 
                 <div>
                   <Label>참가자 명단 *</Label>
                   <div className="space-y-3 mt-3">
-                    {patientFieldArray.fields.map((field, i) => (
+                    {participantFieldArray.fields.map((field, i) => (
                       <div key={field.id} className="flex flex-col gap-1">
                         <div className="flex gap-2">
                           <div className="flex-1">
                             <Input
                               placeholder="이름"
-                              {...register(`participants.${i}.name`)}
-                              className={errors.participants?.[i]?.name ? 'border-red-500' : ''}
+                              {...register(`group.participants.${i}.name`)}
+                              className={errors.group?.participants?.[i]?.name ? 'border-red-500' : ''}
                             />
-                            {errors.participants?.[i]?.name && (
-                              <p className="text-sm text-red-600 mt-1">{errors.participants[i].name.message}</p>
+                            {errors.group?.participants?.[i]?.name && (
+                              <p className="text-sm text-red-600 mt-1">{errors.group.participants[i].name.message}</p>
                             )}
                           </div>
                           <div className="flex-1">
                             <Input
                               placeholder="이메일"
                               type="email"
-                              {...register(`participants.${i}.email`)}
-                              className={errors.participants?.[i]?.email ? 'border-red-500' : ''}
+                              {...register(`group.participants.${i}.email`)}
+                              className={errors.group?.participants?.[i]?.email ? 'border-red-500' : ''}
                             />
-                            {errors.participants?.[i]?.email && (
-                              <p className="text-sm text-red-600 mt-1">{errors.participants[i].email.message}</p>
+                            {errors.group?.participants?.[i]?.email && (
+                              <p className="text-sm text-red-600 mt-1">{errors.group.participants[i].email.message}</p>
                             )}
                           </div>
                           <Button
@@ -204,7 +216,7 @@ const InsertEnrollInfoStep = ({ step, onNextStepClick, onBackStepClick }: Insert
                             variant="ghost"
                             size="sm"
                             onClick={() => removeParticipant(i)}
-                            disabled={patientFieldArray.fields.length <= 2}>
+                            disabled={participantFieldArray.fields.length <= 2}>
                             <Trash2 className="h-4 w-4" />
                           </Button>
                         </div>
@@ -215,7 +227,7 @@ const InsertEnrollInfoStep = ({ step, onNextStepClick, onBackStepClick }: Insert
                       variant="outline"
                       size="sm"
                       onClick={addParticipant}
-                      disabled={patientFieldArray.fields.length >= 10}
+                      disabled={participantFieldArray.fields.length >= 10}
                       className="w-full">
                       참가자 추가
                     </Button>
@@ -223,14 +235,16 @@ const InsertEnrollInfoStep = ({ step, onNextStepClick, onBackStepClick }: Insert
                 </div>
 
                 <div>
-                  <Label htmlFor="managerPhone">담당자 연락처 * (010-1234-5678)</Label>
+                  <Label htmlFor="contactPerson">담당자 연락처 * (010-1234-5678)</Label>
                   <Input
-                    id="managerPhone"
-                    {...register('managerPhone')}
+                    id="contactPerson"
+                    {...register('group.contactPerson')}
                     placeholder="010-1234-5678"
-                    className={errors.managerPhone ? 'border-red-500' : ''}
+                    className={errors.group?.contactPerson ? 'border-red-500' : ''}
                   />
-                  {errors.managerPhone && <p className="text-sm text-red-600 mt-1">{errors.managerPhone.message}</p>}
+                  {errors.group?.contactPerson && (
+                    <p className="text-sm text-red-600 mt-1">{errors.group.contactPerson.message}</p>
+                  )}
                 </div>
               </div>
             )}

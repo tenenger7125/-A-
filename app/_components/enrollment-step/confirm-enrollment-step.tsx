@@ -7,20 +7,36 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Edit2 } from 'lucide-react';
 import { EnrollmentApplicationType, EnrollmentStep, enrollmentFormStore } from '@/store/enrollment-form-store';
+import { useSubmitEnrollmentMutation } from '@/queries/enrollments';
+import { EnrollmentRequest } from '@/mock/enrollments';
 
 const ConfirmEnrollmentStep = ({ step, onNextStepClick, onBackStepClick }: ConfirmEnrollmentStepProps) => {
   const { currentStep, form, setForm, setStep } = enrollmentFormStore();
   const [termsError, setTermsError] = useState<string | null>(null);
+  const { mutate: submitEnrollment, isPending } = useSubmitEnrollmentMutation();
 
   const handleSubmit = () => {
     if (!form.agreedToTerms) {
       setTermsError('이용약관에 동의해주세요');
       return;
     }
-    onNextStepClick();
+    if (!form.selectedCourse) return;
+
+    const { motivation, ...applicantRest } = form.applicant;
+    const applicant = { ...applicantRest, ...(motivation ? { motivation } : {}) };
+    const common = { courseId: form.selectedCourse.id, applicant, agreedToTerms: form.agreedToTerms };
+    const body: EnrollmentRequest =
+      form.type === EnrollmentApplicationType.GROUP
+        ? { ...common, type: form.type, group: form.group }
+        : { ...common, type: form.type };
+
+    submitEnrollment(body, {
+      onSuccess: () => onNextStepClick(),
+      onError: e => setTermsError(e.message || '수강 신청에 실패했습니다'),
+    });
   };
 
-  const isGroup = form.applicationType === EnrollmentApplicationType.GROUP;
+  const isGroup = form.type === EnrollmentApplicationType.GROUP;
 
   return (
     currentStep === step && (
@@ -75,17 +91,17 @@ const ConfirmEnrollmentStep = ({ step, onNextStepClick, onBackStepClick }: Confi
                 <span className="font-medium">신청 유형:</span> {isGroup ? '단체 신청' : '개인 신청'}
               </p>
               <p>
-                <span className="font-medium">이름:</span> {form.name}
+                <span className="font-medium">이름:</span> {form.applicant.name}
               </p>
               <p>
-                <span className="font-medium">이메일:</span> {form.email}
+                <span className="font-medium">이메일:</span> {form.applicant.email}
               </p>
               <p>
-                <span className="font-medium">전화:</span> {form.phone}
+                <span className="font-medium">전화:</span> {form.applicant.phone}
               </p>
-              {form.motivation && (
+              {form.applicant.motivation && (
                 <p>
-                  <span className="font-medium">수강 동기:</span> {form.motivation}
+                  <span className="font-medium">수강 동기:</span> {form.applicant.motivation}
                 </p>
               )}
             </div>
@@ -97,18 +113,18 @@ const ConfirmEnrollmentStep = ({ step, onNextStepClick, onBackStepClick }: Confi
               <h3 className="font-semibold text-gray-900">단체 정보</h3>
               <div className="text-sm text-gray-700 space-y-1">
                 <p>
-                  <span className="font-medium">단체명:</span> {form.groupName}
+                  <span className="font-medium">단체명:</span> {form.group.organizationName}
                 </p>
                 <p>
-                  <span className="font-medium">신청 인원:</span> {form.participants.length}명
+                  <span className="font-medium">신청 인원:</span> {form.group.headCount}명
                 </p>
                 <p>
-                  <span className="font-medium">담당자 연락처:</span> {form.managerPhone}
+                  <span className="font-medium">담당자 연락처:</span> {form.group.contactPerson}
                 </p>
               </div>
               <div className="mt-2 space-y-1">
                 <p className="text-sm font-medium text-gray-700">참가자 명단</p>
-                {form.participants.map((p, i) => (
+                {form.group.participants.map((p, i) => (
                   <div key={i} className="text-sm text-gray-600 flex gap-2">
                     <span>{i + 1}.</span>
                     <span>{p.name}</span>
@@ -142,8 +158,8 @@ const ConfirmEnrollmentStep = ({ step, onNextStepClick, onBackStepClick }: Confi
             <Button variant="outline" onClick={onBackStepClick} className="flex-1">
               이전
             </Button>
-            <Button onClick={handleSubmit} className="flex-1 bg-green-600 hover:bg-green-700">
-              신청 완료
+            <Button onClick={handleSubmit} disabled={isPending} className="flex-1 bg-green-600 hover:bg-green-700">
+              {isPending ? '신청 중...' : '신청 완료'}
             </Button>
           </div>
         </CardContent>
