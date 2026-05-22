@@ -1,7 +1,7 @@
 import { EnrollmentApplicationType, EnrollmentStep } from './constant';
 import { Course } from '@/mock/courses';
 
-export type EnrollmentFormStoreState = {
+export interface EnrollmentFormStoreState {
   currentStep: EnrollmentStep;
   form: {
     selectedCourse: Course | null;
@@ -20,9 +20,11 @@ export type EnrollmentFormStoreState = {
     };
     agreedToTerms: boolean;
   };
-};
+}
 
-export type EnrollmentFormStoreAction = {
+export interface EnrollmentFormStoreAction {
   setStep: (currentStep: EnrollmentFormStoreState['currentStep']) => void;
   setForm: (form: Partial<EnrollmentFormStoreState['form']>) => void;
-};
+  resetStep: () => void;
+  resetForm: () => void;
+}
