@@ -1,8 +1,8 @@
 import { http, HttpResponse } from 'msw';
 import { CATEGORIES, COURSES, CourseListResponse } from './courses';
 
-export const handlers = [
-  http.get('/api/courses', ({ request }) => {
+export const handlers = (baseUrl: string) => [
+  http.get(`${baseUrl}/api/courses`, ({ request }) => {
     const url = new URL(request.url);
     const category = url.searchParams.get('category');
 
