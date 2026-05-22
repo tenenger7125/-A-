@@ -66,35 +66,42 @@ const SelectCourseStep = ({ step, onNextStepClick, initialData }: SelectCourseSt
           )}
 
           <div className="space-y-4">
-            {categories.map(category => (
-              <div key={category}>
-                <h3 className="font-semibold text-gray-900 mb-3">{category}</h3>
-                <div className="grid gap-3">
-                  {courses
-                    .filter(l => l.category === category)
-                    .map(course => (
-                      <button
-                        key={course.id}
-                        onClick={() => handleCourseSelect(course)}
-                        className={`cursor-pointer p-4 rounded-lg border-2 transition-all text-left ${
-                          form.selectedCourse?.id === course.id
-                            ? 'border-blue-600 bg-blue-50'
-                            : 'border-gray-200 hover:border-blue-400'
-                        }`}>
-                        <div className="flex items-start justify-between">
-                          <div>
-                            <p className="font-semibold text-gray-900">{course.title}</p>
-                            <p className="text-sm text-gray-600 mt-1">
-                              {new Date(course.startDate).toLocaleDateString()}
-                            </p>
-                          </div>
-                          <p className="font-bold text-blue-600">₩{course.price.toLocaleString()}</p>
-                        </div>
-                      </button>
-                    ))}
-                </div>
+            {categories.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-12 text-center text-gray-500">
+                <p className="text-lg font-medium">현재 신청 가능한 강의가 없습니다</p>
+                <p className="text-sm mt-1">새로운 강의가 열리면 알려드릴게요</p>
               </div>
-            ))}
+            ) : (
+              categories.map(category => (
+                <div key={category}>
+                  <h3 className="font-semibold text-gray-900 mb-3">{category}</h3>
+                  <div className="grid gap-3">
+                    {courses
+                      .filter(l => l.category === category)
+                      .map(course => (
+                        <button
+                          key={course.id}
+                          onClick={() => handleCourseSelect(course)}
+                          className={`cursor-pointer p-4 rounded-lg border-2 transition-all text-left ${
+                            form.selectedCourse?.id === course.id
+                              ? 'border-blue-600 bg-blue-50'
+                              : 'border-gray-200 hover:border-blue-400'
+                          }`}>
+                          <div className="flex items-start justify-between">
+                            <div>
+                              <p className="font-semibold text-gray-900">{course.title}</p>
+                              <p className="text-sm text-gray-600 mt-1">
+                                {new Date(course.startDate).toLocaleDateString()}
+                              </p>
+                            </div>
+                            <p className="font-bold text-blue-600">₩{course.price.toLocaleString()}</p>
+                          </div>
+                        </button>
+                      ))}
+                  </div>
+                </div>
+              ))
+            )}
           </div>
 
           {form.selectedCourse && (
