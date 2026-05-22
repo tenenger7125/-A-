@@ -37,3 +37,22 @@ export interface EnrollmentResponse {
   status: 'confirmed' | 'pending';
   enrolledAt: string;
 }
+
+export type EnrollmentErrorCode = 'COURSE_FULL' | 'DUPLICATE_ENROLLMENT' | 'INVALID_INPUT';
+
+export interface ErrorResponse {
+  code: EnrollmentErrorCode;
+  message: string;
+  details?: Record<string, string>;
+}
+
+export class EnrollmentApiError extends Error {
+  code: EnrollmentErrorCode;
+  details?: Record<string, string>;
+
+  constructor(response: ErrorResponse) {
+    super(response.message);
+    this.code = response.code;
+    this.details = response.details;
+  }
+}

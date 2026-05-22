@@ -1,4 +1,4 @@
-import { EnrollmentRequest, EnrollmentResponse } from '@/mock/enrollments';
+import { EnrollmentApiError, EnrollmentRequest, EnrollmentResponse, ErrorResponse } from '@/mock/enrollments';
 import { getBaseUrl } from '@/lib/get-api-url';
 import { useMutation } from '@tanstack/react-query';
 
@@ -9,10 +9,15 @@ export const submitEnrollment = async (body: EnrollmentRequest): Promise<Enrollm
     body: JSON.stringify(body),
   });
 
+  if (!res.ok) {
+    const error: ErrorResponse = await res.json();
+    throw new EnrollmentApiError(error);
+  }
+
   return res.json();
 };
 
 export const useSubmitEnrollmentMutation = () =>
-  useMutation<EnrollmentResponse, Error, EnrollmentRequest>({
+  useMutation<EnrollmentResponse, EnrollmentApiError, EnrollmentRequest>({
     mutationFn: submitEnrollment,
   });

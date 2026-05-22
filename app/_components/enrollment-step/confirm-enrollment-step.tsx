@@ -6,9 +6,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Edit2 } from 'lucide-react';
+import { toast } from 'sonner';
 import { EnrollmentApplicationType, EnrollmentStep, enrollmentFormStore } from '@/store/enrollment-form-store';
 import { useSubmitEnrollmentMutation } from '@/queries/enrollments';
-import { EnrollmentRequest } from '@/mock/enrollments';
+import { EnrollmentApiError, EnrollmentRequest } from '@/mock/enrollments';
 
 const ConfirmEnrollmentStep = ({ step, onNextStepClick, onBackStepClick }: ConfirmEnrollmentStepProps) => {
   const { currentStep, form, setForm, setStep } = enrollmentFormStore();
@@ -16,6 +17,11 @@ const ConfirmEnrollmentStep = ({ step, onNextStepClick, onBackStepClick }: Confi
   const { mutate: submitEnrollment, isPending } = useSubmitEnrollmentMutation();
 
   const handleSubmit = () => {
+    if (isPending) {
+      toast.info('이미 신청 중입니다. 잠시만 기다려주세요.');
+      return;
+    }
+
     if (!form.agreedToTerms) {
       setTermsError('이용약관에 동의해주세요');
       return;
@@ -32,7 +38,24 @@ const ConfirmEnrollmentStep = ({ step, onNextStepClick, onBackStepClick }: Confi
 
     submitEnrollment(body, {
       onSuccess: () => onNextStepClick(),
-      onError: e => setTermsError(e.message || '수강 신청에 실패했습니다'),
+      onError: (e: EnrollmentApiError) => {
+        if (e.code === 'COURSE_FULL') {
+          toast.error('수강 신청 불가', {
+            description: '정원이 초과되어 신청할 수 없습니다. 다른 강의를 선택해 주세요.',
+            action: { label: '강의 다시 선택', onClick: () => setStep(EnrollmentStep.COURSE) },
+            duration: Infinity,
+          });
+        } else if (e.code === 'DUPLICATE_ENROLLMENT') {
+          toast.error('중복 신청', {
+            description: '이미 신청된 강의입니다.',
+          });
+        } else if (e.code === 'INVALID_INPUT' && e.details) {
+          const fieldErrors = Object.values(e.details).join('\n');
+          toast.error('입력값 오류', { description: fieldErrors });
+        } else {
+          toast.error('수강 신청 실패', { description: e.message || '잠시 후 다시 시도해 주세요.' });
+        }
+      },
     });
   };
 
