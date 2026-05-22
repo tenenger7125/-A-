@@ -1,10 +1,10 @@
-import { Lecture } from '@/mock/lectures';
 import { EnrollmentApplicationType, EnrollmentStep } from './constant';
+import { Course } from '@/mock/courses';
 
 export type EnrollmentFormStoreState = {
   currentStep: EnrollmentStep;
   form: {
-    selectedLecture: Lecture | null;
+    selectedCourse: Course | null;
     applicationType: EnrollmentApplicationType;
     name: string;
     email: string;

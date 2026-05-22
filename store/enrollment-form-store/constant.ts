@@ -1,5 +1,5 @@
 export enum EnrollmentStep {
-  LECTURE = 'lecture',
+  COURSE = 'course',
   INFO = 'info',
   CONFIRM = 'confirm',
   COMPLETE = 'complete',

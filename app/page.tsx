@@ -1,12 +1,12 @@
 'use client';
 
-import SelectLectureStep from './_components/enrollment-step/select-lecture-step';
+import SelectCourseStep from './_components/enrollment-step/select-course-step';
 import ProgressBar from './_components/enrollment-progress-bar/progress-bar';
 import { enrollmentFormStore, EnrollmentStep } from '@/store/enrollment-form-store';
 
-const LectureEnrollment = () => {
+const CourseEnrollment = () => {
   const { currentStep, setStep } = enrollmentFormStore();
-  const enrollmentOrders = [EnrollmentStep.LECTURE, EnrollmentStep.INFO, EnrollmentStep.CONFIRM];
+  const enrollmentOrders = [EnrollmentStep.COURSE, EnrollmentStep.INFO, EnrollmentStep.CONFIRM];
 
   const handleNextStepClick = () => {
     const currentIndex = enrollmentOrders.indexOf(currentStep);
@@ -43,10 +43,10 @@ const LectureEnrollment = () => {
         </div>
 
         <ProgressBar values={enrollmentOrders} />
-        <SelectLectureStep step={EnrollmentStep.LECTURE} onNextStepClick={handleNextStepClick} />
+        <SelectCourseStep step={EnrollmentStep.COURSE} onNextStepClick={handleNextStepClick} />
       </div>
     </div>
   );
 };
 
-export default LectureEnrollment;
+export default CourseEnrollment;

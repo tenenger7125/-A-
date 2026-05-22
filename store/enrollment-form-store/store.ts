@@ -3,9 +3,9 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import { EnrollmentStep, EnrollmentApplicationType } from './constant';
 import { EnrollmentFormStoreAction, EnrollmentFormStoreState } from './type';
 
-const defaultStep: EnrollmentFormStoreState['currentStep'] = EnrollmentStep.LECTURE;
+const defaultStep: EnrollmentFormStoreState['currentStep'] = EnrollmentStep.COURSE;
 const defaultForm: EnrollmentFormStoreState['form'] = {
-  selectedLecture: null,
+  selectedCourse: null,
   applicationType: EnrollmentApplicationType.INDIVIDUAL,
   name: '',
   email: '',
