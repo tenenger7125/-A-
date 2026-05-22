@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useFieldArray, useForm, useWatch, type Resolver } from 'react-hook-form';
+import { useFieldArray, useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 
 import { Button } from '@/components/ui/button';
@@ -24,7 +24,8 @@ const InsertEnrollInfoStep = ({ step, onNextStepClick, onBackStepClick }: Insert
     clearErrors,
     formState: { errors },
   } = useForm<EnrollInfoFormValues>({
-    resolver: zodResolver(enrollInfoSchema),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    resolver: zodResolver(enrollInfoSchema as any),
     defaultValues: {
       type: storeForm.type,
       applicant: storeForm.applicant,

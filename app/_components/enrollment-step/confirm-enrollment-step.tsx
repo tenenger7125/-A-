@@ -17,11 +17,6 @@ const ConfirmEnrollmentStep = ({ step, onNextStepClick, onBackStepClick }: Confi
   const { mutate: submitEnrollment, isPending } = useSubmitEnrollmentMutation();
 
   const handleSubmit = () => {
-    if (isPending) {
-      toast.info('이미 신청 중입니다. 잠시만 기다려주세요.');
-      return;
-    }
-
     if (!form.agreedToTerms) {
       setTermsError('이용약관에 동의해주세요');
       return;
@@ -36,9 +31,15 @@ const ConfirmEnrollmentStep = ({ step, onNextStepClick, onBackStepClick }: Confi
         ? { ...common, type: form.type, group: form.group }
         : { ...common, type: form.type };
 
+    const toastId = toast.loading('수강 신청 중...');
+
     submitEnrollment(body, {
-      onSuccess: () => onNextStepClick(),
+      onSuccess: () => {
+        toast.dismiss(toastId);
+        onNextStepClick();
+      },
       onError: (e: EnrollmentApiError) => {
+        toast.dismiss(toastId);
         if (e.code === 'COURSE_FULL') {
           toast.error('수강 신청 불가', {
             description: '정원이 초과되어 신청할 수 없습니다. 다른 강의를 선택해 주세요.',
@@ -182,7 +183,7 @@ const ConfirmEnrollmentStep = ({ step, onNextStepClick, onBackStepClick }: Confi
               이전
             </Button>
             <Button onClick={handleSubmit} disabled={isPending} className="flex-1 bg-green-600 hover:bg-green-700">
-              {isPending ? '신청 중...' : '신청 완료'}
+              신청 완료
             </Button>
           </div>
         </CardContent>
