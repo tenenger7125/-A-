@@ -2,6 +2,7 @@
 
 import SelectCourseStep from './enrollment-step/select-course-step';
 import InsertEnrollInfoStep from './enrollment-step/insert-enroll-info-step';
+import ConfirmEnrollmentStep from './enrollment-step/confirm-enrollment-step';
 import ProgressBar from './enrollment-progress-bar/progress-bar';
 import { enrollmentFormStore, EnrollmentStep } from '@/store/enrollment-form-store';
 import { CourseListResponse } from '@/mock/courses';
@@ -55,6 +56,11 @@ const CourseEnrollment = ({ initialData }: CourseEnrollmentProps) => {
         <InsertEnrollInfoStep
           step={EnrollmentStep.INFO}
           onNextStepClick={handleNextStepClick}
+          onBackStepClick={handleBackStepClick}
+        />
+        <ConfirmEnrollmentStep
+          step={EnrollmentStep.CONFIRM}
+          onNextStepClick={() => setStep(EnrollmentStep.COMPLETE)}
           onBackStepClick={handleBackStepClick}
         />
       </div>
